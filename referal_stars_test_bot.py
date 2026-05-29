@@ -45,7 +45,7 @@ settings = Settings(
     mongodb_uri=os.getenv("MONGODB_URI", "mongodb+srv://bmurodova550_db_user:javohir1234@kinobot1.vlz17q5.mongodb.net/?appName=kinobot1"),
     mongodb_db=os.getenv("MONGODB_DB", "referral_stars_bot"),
     webhook_secret=os.getenv("WEBHOOK_SECRET", "secret123"),
-    public_base_url=os.getenv("PUBLIC_BASE_URL", ""),
+    public_base_url=os.getenv("PUBLIC_BASE_URL", "https://requirements14-txt-1.onrender.com"),
     admin_ids=csv_ints(os.getenv("ADMIN_IDS", "6968399046")),
     bot_username=os.getenv("BOT_USERNAME", "java_free_things_bot"),
     default_emoji_id=os.getenv("DEFAULT_EMOJI_ID", "5458794766248459827"),
