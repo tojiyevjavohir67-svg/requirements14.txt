@@ -711,62 +711,6 @@ def handle_admin_state(message: Message) -> bool:
 
     return False
 
-
-@app.get("/")
-def healthcheck():
-    return {
-        "ok": True,
-        "service": "Referral Stars Bot",
-        "setup_webhook": "/setup-webhook",
-        "webhook_info": "/webhook-info",
-    }
-
-
-@app.post(f"/webhook/{settings.webhook_secret}")
-def telegram_webhook():
-    if request.headers.get("content-type") != "application/json":
-        abort(403)
-    update = Update.de_json(request.get_data().decode("utf-8"))
-    bot.process_new_updates([update])
-    return {"ok": True}
-
-
-@app.get("/setup-webhook")
-@app.get("/setup-webhook/")
-@app.get(f"/setup-webhook/{settings.webhook_secret}")
-@app.get(f"/setup-webhook/{settings.webhook_secret}/")
-def setup_webhook():
-    result = configure_webhook()
-    return result, 200 if result.get("ok") else 400
-
-
-@app.get("/webhook-info")
-@app.get("/webhook-info/")
-@app.get(f"/webhook-info/{settings.webhook_secret}")
-@app.get(f"/webhook-info/{settings.webhook_secret}/")
-def webhook_info():
-    return bot.get_webhook_info().to_dict()
-
-
-@app.cli.command("set-webhook")
-def set_webhook():
-    result = configure_webhook()
-    if not result.get("ok"):
-        raise RuntimeError(result["error"])
-    print(f"Webhook o'rnatildi: {result['webhook']}")
-
-
-def start_polling() -> None:
-    ensure_indexes()
-    bot.remove_webhook()
-    print("Polling ishga tushdi. To'xtatish uchun CTRL+C bosing.")
-    bot.infinity_polling(skip_pending=True, timeout=30, long_polling_timeout=30, allowed_updates=["message", "callback_query"])
-
-
-@app.cli.command("run-polling")
-def run_polling():
-    start_polling()
-
 @app.get("/")
 def home():
     return {"ok": True, "service": "Referral Stars Bot"}
@@ -783,23 +727,31 @@ def telegram_webhook():
 
 
 @app.get("/setup-webhook")
+@app.get("/setup-webhook/")
 def setup_webhook():
+    if not settings.public_base_url:
+        return {"ok": False, "error": "PUBLIC_BASE_URL yozilmagan"}, 400
+
     url = f"{settings.public_base_url.rstrip('/')}/webhook/{settings.webhook_secret}"
+
     bot.remove_webhook()
-    bot.set_webhook(url=url, allowed_updates=["message", "callback_query"])
+    bot.set_webhook(
+        url=url,
+        allowed_updates=["message", "callback_query"],
+    )
+
     return {"ok": True, "webhook": url}
 
 
 @app.get("/webhook-info")
+@app.get("/webhook-info/")
 def webhook_info():
     return bot.get_webhook_info().to_dict()
 
 
-
-
 if __name__ == "__main__":
-    if os.getenv("RUN_MODE", "flask").lower() == "polling":
-        start_polling()
-    else:
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
+
+
         app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
 
