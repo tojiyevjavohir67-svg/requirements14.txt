@@ -767,13 +767,6 @@ def start_polling() -> None:
 def run_polling():
     start_polling()
 
-
-if __name__ == "__main__":
-    if os.getenv("RUN_MODE", "flask").lower() == "polling":
-        start_polling()
-    else:
-        app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
-
 @app.get("/")
 def home():
     return {"ok": True, "service": "Referral Stars Bot"}
@@ -800,4 +793,13 @@ def setup_webhook():
 @app.get("/webhook-info")
 def webhook_info():
     return bot.get_webhook_info().to_dict()
+
+
+
+
+if __name__ == "__main__":
+    if os.getenv("RUN_MODE", "flask").lower() == "polling":
+        start_polling()
+    else:
+        app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
 
