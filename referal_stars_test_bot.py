@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+import certifi
 from bson import ObjectId
 from dotenv import load_dotenv
 from flask import Flask, abort, request
@@ -57,7 +58,12 @@ if not settings.bot_token:
 
 bot = TeleBot(settings.bot_token, parse_mode="HTML", threaded=False)
 app = Flask(__name__)
-client = MongoClient(settings.mongodb_uri)
+client = MongoClient(
+    settings.mongodb_uri,
+    tls=True,
+    tlsCAFile=certifi.where(),
+    serverSelectionTimeoutMS=20000,
+)
 db = client[settings.mongodb_db]
 
 users = db.users
