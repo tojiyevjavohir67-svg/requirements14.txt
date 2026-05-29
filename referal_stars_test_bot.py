@@ -318,12 +318,10 @@ def configure_webhook() -> dict[str, Any]:
 @app.before_request
 def prepare_once():
     global webhook_ready
-    if not app.config.get("INDEXES_READY"):
-        ensure_indexes()
-        app.config["INDEXES_READY"] = True
     if not webhook_ready and settings.public_base_url:
         configure_webhook()
         webhook_ready = True
+
 
 
 @bot.message_handler(commands=["start"])
