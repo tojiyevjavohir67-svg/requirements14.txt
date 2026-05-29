@@ -773,3 +773,31 @@ if __name__ == "__main__":
         start_polling()
     else:
         app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
+
+@app.get("/")
+def home():
+    return {"ok": True, "service": "Referral Stars Bot"}
+
+
+@app.post(f"/webhook/{settings.webhook_secret}")
+def telegram_webhook():
+    if request.headers.get("content-type") != "application/json":
+        abort(403)
+
+    update = Update.de_json(request.get_data().decode("utf-8"))
+    bot.process_new_updates([update])
+    return {"ok": True}
+
+
+@app.get("/setup-webhook")
+def setup_webhook():
+    url = f"{settings.public_base_url.rstrip('/')}/webhook/{settings.webhook_secret}"
+    bot.remove_webhook()
+    bot.set_webhook(url=url, allowed_updates=["message", "callback_query"])
+    return {"ok": True, "webhook": url}
+
+
+@app.get("/webhook-info")
+def webhook_info():
+    return bot.get_webhook_info().to_dict()
+
